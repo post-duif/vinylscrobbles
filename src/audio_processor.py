@@ -53,7 +53,12 @@ class AudioProcessor:
         self.sample_rate = self.audio_config.get('sample_rate', 44100)
         self.chunk_size = self.audio_config.get('chunk_size', 4096)
         self.channels = self.audio_config.get('channels', 2)
-        self.format = getattr(pyaudio, f'pa{self.audio_config.get("format", "int16").upper()}')
+        
+        # Map format string to pyaudio format constant (e.g., "int16" -> pyaudio.paInt16)
+        format_str = self.audio_config.get("format", "int16").lower()
+        # Convert "int16" -> "Int16" to match PyAudio's naming convention (paInt16)
+        format_name = ''.join([format_str[0].upper(), format_str[1:]])
+        self.format = getattr(pyaudio, f'pa{format_name}')
         
         # Detection settings
         self.silence_threshold = self.audio_config.get('silence_threshold', 0.01)

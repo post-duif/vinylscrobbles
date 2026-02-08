@@ -195,8 +195,14 @@ class ShazamProvider(BaseRecognitionProvider):
     def __init__(self, config: Dict[str, Any]):
         super().__init__('shazam', config)
         self.shazam_client = None
+        self.initialization_error = None
+        
         if SHAZAM_AVAILABLE:
-            self.shazam_client = Shazam()
+            try:
+                self.shazam_client = Shazam()
+            except Exception as e:
+                self.initialization_error = str(e)
+                logger.warning(f"Failed to initialize Shazam client: {e}")
     
     def is_available(self) -> bool:
         """Check if Shazam is available."""
@@ -309,11 +315,17 @@ class MusicRecognizer:
         
         # Initialize AudD provider
         if 'audd' in provider_configs:
-            providers.append(AudDProvider(provider_configs['audd']))
+            try:
+                providers.append(AudDProvider(provider_configs['audd']))
+            except Exception as e:
+                logger.error(f"Failed to initialize AudD provider: {e}")
         
         # Initialize Shazam provider
         if 'shazam' in provider_configs:
-            providers.append(ShazamProvider(provider_configs['shazam']))
+            try:
+                providers.append(ShazamProvider(provider_configs['shazam']))
+            except Exception as e:
+                logger.error(f"Failed to initialize Shazam provider: {e}")
         
         return providers
     
