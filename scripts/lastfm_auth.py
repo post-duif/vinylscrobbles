@@ -14,10 +14,12 @@ from urllib.parse import urlencode
 import requests
 
 # Add src directory to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+script_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.dirname(script_dir)
+sys.path.insert(0, os.path.join(project_root, 'src'))
 
 try:
-    from config_manager import get_config
+    from config_manager import initialize_config
 except ImportError:
     print("Error: Could not import config_manager. Make sure you're running from the project directory.")
     sys.exit(1)
@@ -34,7 +36,11 @@ class LastFMAuthenticator:
     def load_config(self):
         """Load API credentials from configuration."""
         try:
-            config = get_config()
+            # Initialize config with the correct path
+            script_dir = os.path.dirname(os.path.abspath(__file__))
+            project_root = os.path.dirname(script_dir)
+            config_dir = os.path.join(project_root, 'config')
+            config = initialize_config(config_dir)
             self.api_key = config.get_secret('LASTFM_API_KEY')
             self.api_secret = config.get_secret('LASTFM_API_SECRET')
             
