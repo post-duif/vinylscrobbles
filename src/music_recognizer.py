@@ -328,21 +328,20 @@ class MusicRecognizer:
         Args:
             audio_file: Path to audio file to recognize
             
-        Returns:
-            RecognitionResult with the best match found
-        """
-        if not self.providers:
-            return RecognitionResult(
-                success=False,
-                confidence=0.0,
-                provider='none',
-                error_message="No recognition providers available"
-            )
-        
-        # Rate limiting
-        current_time = time.time()
-        if current_time - self.last_request_time < self.rate_limit_delay:
-            await asyncio.sleep(self.rate_limit_delay - (current_time - self.last_request_time))
+        try:
+            from shazamio import Shazam
+            SHAZAM_AVAILABLE = True
+        except ImportError:
+            SHAZAM_AVAILABLE = False
+
+        from config_manager import get_config
+
+        # Initialize module logger early so import-time checks can safely log
+        logger = logging.getLogger(__name__)
+
+        # If shazamio isn't available, log a user-friendly warning
+        if not SHAZAM_AVAILABLE:
+            logger.warning("shazamio not available. Install with: pip install shazamio")
         
         self.last_request_time = time.time()
         
