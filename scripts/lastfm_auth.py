@@ -102,22 +102,32 @@ class LastFMAuthenticator:
         
         auth_url = f"https://www.last.fm/api/auth/?api_key={self.api_key}&token={token}"
         
-        print(f"Opening authorization URL in your browser:")
+        print("\n📋 Authorization URL:")
         print(f"{auth_url}")
         print()
-        print("Please:")
-        print("1. Log in to your Last.fm account")
-        print("2. Click 'Yes, allow access' to authorize this application")
-        print("3. Return to this terminal when done")
         
         # Try to open browser automatically
+        browser_opened = False
         try:
-            webbrowser.open(auth_url)
-        except:
-            print("Could not open browser automatically. Please copy the URL above manually.")
+            if webbrowser.open(auth_url):
+                browser_opened = True
+                print("✅ Browser opened automatically")
+        except Exception as e:
+            print(f"ℹ️  Could not open browser automatically: {e}")
+        
+        if not browser_opened:
+            print("\n⚠️  HEADLESS SYSTEM DETECTED")
+            print("Since this appears to be a headless system (no graphical display),")
+            print("you need to authorize from another device:")
+            print()
+            print("1. Copy the authorization URL above")
+            print("2. Open it on your laptop/desktop browser")
+            print("3. Log in to your Last.fm account")
+            print("4. Click 'Yes, allow access' to authorize this application")
+            print("5. Return here and press Enter")
         
         # Wait for user confirmation
-        input("\nPress Enter after you have authorized the application...")
+        input("\n⏳ Press Enter after you have authorized the application...")
         
     def get_session_key(self, token):
         """Step 3: Exchange authorized token for session key."""
