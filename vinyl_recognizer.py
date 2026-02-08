@@ -12,6 +12,7 @@ import sys
 import time
 import logging
 import threading
+import os
 from pathlib import Path
 from typing import Optional
 
@@ -25,13 +26,17 @@ from src.lastfm_scrobbler import LastFMScrobbler
 from src.duplicate_detector import DuplicateDetector
 from src.database import DatabaseManager
 
+# Ensure logs directory exists
+logs_dir = Path(__file__).parent / 'logs'
+logs_dir.mkdir(exist_ok=True)
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
         logging.StreamHandler(),
-        logging.FileHandler('logs/vinyl_recognizer.log')
+        logging.FileHandler(str(logs_dir / 'vinyl_recognizer.log'))
     ]
 )
 

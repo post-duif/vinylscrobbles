@@ -20,16 +20,17 @@ import json
 try:
     from shazamio import Shazam
     SHAZAM_AVAILABLE = True
-except ImportError:
+except ImportError as e:
     SHAZAM_AVAILABLE = False
+    _shazam_import_error = str(e)
 
 from config_manager import get_config
 
 logger = logging.getLogger(__name__)
 
-# If shazamio isn't available, log a user-friendly warning
+# If shazamio isn't available, log a user-friendly warning (only once at module load)
 if not SHAZAM_AVAILABLE:
-    logger.warning("shazamio not available. Install with: pip install shazamio")
+    logger.warning(f"shazamio not available. Install with: pip install shazamio (Details: {_shazam_import_error})")
 
 
 @dataclass
