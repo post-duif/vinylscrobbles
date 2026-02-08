@@ -331,21 +331,9 @@ class MusicRecognizer:
         Args:
             audio_file: Path to audio file to recognize
             
-        try:
-            from shazamio import Shazam
-            SHAZAM_AVAILABLE = True
-        except ImportError:
-            SHAZAM_AVAILABLE = False
-
-        from config_manager import get_config
-
-        # Initialize module logger early so import-time checks can safely log
-        logger = logging.getLogger(__name__)
-
-        # If shazamio isn't available, log a user-friendly warning
-        if not SHAZAM_AVAILABLE:
-            logger.warning("shazamio not available. Install with: pip install shazamio")
-        
+        Returns:
+            RecognitionResult with best match
+        """
         self.last_request_time = time.time()
         
         # Try providers in order
