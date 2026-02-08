@@ -22,11 +22,14 @@ try:
     SHAZAM_AVAILABLE = True
 except ImportError:
     SHAZAM_AVAILABLE = False
-    logger.warning("shazamio not available. Install with: pip install shazamio")
 
 from config_manager import get_config
 
 logger = logging.getLogger(__name__)
+
+# If shazamio isn't available, log a user-friendly warning
+if not SHAZAM_AVAILABLE:
+    logger.warning("shazamio not available. Install with: pip install shazamio")
 
 
 @dataclass
