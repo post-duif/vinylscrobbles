@@ -91,35 +91,29 @@ class AudDProvider(BaseRecognitionProvider):
             )
         
         try:
-            # Prepare the audio file for upload
+            # Prepare the audio file for upload using aiohttp FormData
+            form_data = aiohttp.FormData()
+            form_data.add_field('api_token', self.api_key)
+            form_data.add_field('return', 'apple_music,spotify,deezer,napster,musicbrainz')
+            
             with open(audio_file, 'rb') as f:
-                audio_data = f.read()
+                form_data.add_field('file', f, filename='audio.wav', content_type='audio/wav')
             
-            # Prepare the request
-            data = {
-                'api_token': self.api_key,
-                'return': 'apple_music,spotify,deezer,napster,musicbrainz'
-            }
-            
-            files = {
-                'file': ('audio.wav', audio_data, 'audio/wav')
-            }
-            
-            # Make the API request
-            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=self.timeout)) as session:
-                async with session.post(self.api_url, data=data, files=files) as response:
-                    if response.status == 200:
-                        result_data = await response.json()
-                        return self._parse_audd_response(result_data)
-                    else:
-                        error_msg = f"AudD API error: HTTP {response.status}"
-                        logger.error(error_msg)
-                        return RecognitionResult(
-                            success=False,
-                            confidence=0.0,
-                            provider=self.name,
-                            error_message=error_msg
-                        )
+                # Make the API request
+                async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=self.timeout)) as session:
+                    async with session.post(self.api_url, data=form_data) as response:
+                        if response.status == 200:
+                            result_data = await response.json()
+                            return self._parse_audd_response(result_data)
+                        else:
+                            error_msg = f"AudD API error: HTTP {response.status}"
+                            logger.error(error_msg)
+                            return RecognitionResult(
+                                success=False,
+                                confidence=0.0,
+                                provider=self.name,
+                                error_message=error_msg
+                            )
         
         except Exception as e:
             error_msg = f"AudD recognition error: {e}"
