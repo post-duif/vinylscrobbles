@@ -24,6 +24,7 @@
         "timeout": 30,
         "max_retries": 3
       }
+      
     },
     "min_confidence": 0.6,
     "rate_limit_delay": 1.0
@@ -36,6 +37,13 @@
       "max_queue_size": 1000,
       "retry_interval": 300,
       "max_retries": 5
+    }
+    ,
+    "maloja": {
+      "enabled": false,
+      "api_url": "http://localhost:8080/apis/mlj_1",
+      "api_key": "",
+      "timeout": 30
     }
   },
   "duplicate_detection": {

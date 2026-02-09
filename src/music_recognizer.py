@@ -285,6 +285,9 @@ class ShazamProvider(BaseRecognitionProvider):
             )
 
 
+
+
+
 class MusicRecognizer:
     """Main music recognition coordinator with multiple providers."""
     
@@ -320,6 +323,8 @@ class MusicRecognizer:
                 providers.append(ShazamProvider(provider_configs['shazam']))
             except Exception as e:
                 logger.error(f"Failed to initialize Shazam provider: {e}")
+
+        
         
         return providers
     

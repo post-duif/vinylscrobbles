@@ -23,6 +23,7 @@ from src.config_manager import initialize_config
 from src.audio_processor import AudioProcessor
 from src.music_recognizer import MusicRecognizer
 from src.lastfm_scrobbler import LastFMScrobbler
+from src.maloja_scrobbler import MalojaScrobbler
 from src.duplicate_detector import DuplicateDetector
 from src.database import DatabaseManager
 
@@ -57,6 +58,7 @@ class VinylRecognitionSystem:
         self.database = DatabaseManager()
         self.duplicate_detector = DuplicateDetector(self.database)
         self.lastfm_scrobbler = LastFMScrobbler(self.database)
+        self.maloja_scrobbler = MalojaScrobbler(self.database)
         self.music_recognizer = MusicRecognizer()
         self.audio_processor = AudioProcessor(on_track_detected=self.on_track_detected)
         
@@ -164,6 +166,14 @@ class VinylRecognitionSystem:
         lastfm_status = self.lastfm_scrobbler.get_status()
         if not lastfm_status['available']:
             logger.warning("Last.fm scrobbling not available - check configuration")
+
+        # Check Maloja configuration (warning only)
+        try:
+            maloja_available = self.maloja_scrobbler.is_available()
+            if self.maloja_scrobbler.enabled and not maloja_available:
+                logger.warning("Maloja scrobbling enabled but not available - check configuration")
+        except Exception:
+            pass
         
         if issues:
             raise RuntimeError(f"System not ready: {', '.join(issues)}")
@@ -213,11 +223,24 @@ class VinylRecognitionSystem:
                 self.duplicate_detector.add_track(recognition_result)
                 
                 # Queue for scrobbling
+                queued = False
                 if self.lastfm_scrobbler.queue_scrobble(recognition_result):
+                    queued = True
                     self.stats['tracks_scrobbled'] += 1
-                    logger.info(f"Track queued for scrobbling: {recognition_result.artist} - {recognition_result.title}")
+                    logger.info(f"Track queued for scrobbling (Last.fm): {recognition_result.artist} - {recognition_result.title}")
                 else:
-                    logger.warning(f"Failed to queue track for scrobbling: {recognition_result.artist} - {recognition_result.title}")
+                    logger.warning(f"Failed to queue track for scrobbling (Last.fm): {recognition_result.artist} - {recognition_result.title}")
+
+                # Also send to Maloja immediately if configured
+                try:
+                    if self.maloja_scrobbler and self.maloja_scrobbler.is_available():
+                        maloja_result = self.maloja_scrobbler.scrobble_now(recognition_result)
+                        if maloja_result.get('status') == 'success':
+                            logger.info(f"Track sent to Maloja: {recognition_result.artist} - {recognition_result.title}")
+                        else:
+                            logger.warning(f"Maloja scrobble failed: {maloja_result}")
+                except Exception as e:
+                    logger.error(f"Error sending to Maloja: {e}")
             
             else:
                 logger.info(f"Track recognition failed: {recognition_result.error_message}")
